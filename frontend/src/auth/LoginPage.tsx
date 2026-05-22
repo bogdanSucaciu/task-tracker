@@ -33,7 +33,7 @@ export function LoginPage() {
     <main className="auth-page">
       <form className="auth-panel" onSubmit={submit}>
         <h1>Task Tracker</h1>
-        <p>Sign in to manage engineering work.</p>
+        <p>Sign in to your workspace.</p>
         {error && <div className="error">{error}</div>}
         <Input label="Email" value={email} onChange={setEmail} type="email" />
         <Input label="Password" value={password} onChange={setPassword} type="password" />

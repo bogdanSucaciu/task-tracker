@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Trash2 } from 'lucide-react';
+import { Check, Plus, RotateCcw, Trash2 } from 'lucide-react';
 import { deleteTask, listTasks, updateTaskStatus } from '../api/taskApi';
 import { Button } from '../components/Button';
+import { StatusBadge } from '../components/StatusBadge';
 import type { Task, TaskStatus } from './taskTypes';
 
 const statuses: Array<{ label: string; value: TaskStatus | '' }> = [
@@ -47,7 +48,7 @@ export function TaskListPage() {
           <h1>Tasks</h1>
           <p>Filter, update, and assign work.</p>
         </div>
-        <Link className="link-button" to="/tasks/new">Create task</Link>
+        <Link className="link-button" to="/tasks/new"><Plus size={16} />Create task</Link>
       </div>
       <div className="filters">
         {statuses.map((option) => (
@@ -67,13 +68,22 @@ export function TaskListPage() {
             <div>
               <Link to={`/tasks/${task.id}/edit`} className="task-title">{task.title}</Link>
               <p>{task.description || 'No description'}</p>
-              <small>{task.assignedUser.displayName} · {task.status.replace('_', ' ')}</small>
+              <small>
+                <StatusBadge status={task.status} />
+                {task.assignedUser.displayName}
+              </small>
             </div>
             <div className="row-actions">
-              <Button variant="secondary" onClick={() => void markDone(task)}>
+              <Button
+                variant="secondary"
+                onClick={() => void markDone(task)}
+                icon={task.status === 'DONE' ? <RotateCcw size={15} /> : <Check size={15} />}
+              >
                 {task.status === 'DONE' ? 'Reopen' : 'Done'}
               </Button>
-              <Button variant="danger" onClick={() => void remove(task)} icon={<Trash2 size={16} />}>Delete</Button>
+              <Button variant="danger" onClick={() => void remove(task)} icon={<Trash2 size={15} />}>
+                Delete
+              </Button>
             </div>
           </article>
         ))}

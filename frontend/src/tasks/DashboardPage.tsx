@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { Plus } from 'lucide-react';
 import { listTasks } from '../api/taskApi';
+import { StatusBadge } from '../components/StatusBadge';
 import type { Task } from './taskTypes';
 
 export function DashboardPage() {
@@ -29,7 +31,7 @@ export function DashboardPage() {
           <h1>Dashboard</h1>
           <p>{tasks.length} active records across the team.</p>
         </div>
-        <Link className="link-button" to="/tasks/new">Create task</Link>
+        <Link className="link-button" to="/tasks/new"><Plus size={16} />Create task</Link>
       </div>
       {error && <div className="error">{error}</div>}
       <section className="metrics">
@@ -42,7 +44,7 @@ export function DashboardPage() {
         {tasks.slice(0, 5).map((task) => (
           <Link to={`/tasks/${task.id}/edit`} key={task.id} className="recent-row">
             <span>{task.title}</span>
-            <small>{task.status.replace('_', ' ')}</small>
+            <StatusBadge status={task.status} />
           </Link>
         ))}
       </section>
