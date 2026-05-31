@@ -22,3 +22,10 @@ export type TaskPayload = {
   status: TaskStatus;
   assignedUserId: number;
 };
+
+export type Comment = {
+  id: number;
+  body: string;
+  authorDisplayName: string;
+  createdAt: string;
+};

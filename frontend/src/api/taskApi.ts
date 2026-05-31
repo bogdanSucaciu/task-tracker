@@ -1,5 +1,5 @@
 import { apiRequest } from './http';
-import type { Task, TaskPayload, TaskStatus, UserSummary } from '../tasks/taskTypes';
+import type { Comment, Task, TaskPayload, TaskStatus, UserSummary } from '../tasks/taskTypes';
 
 export function listTasks(status?: TaskStatus) {
   const query = status ? `?status=${status}` : '';
@@ -37,4 +37,19 @@ export function deleteTask(id: number) {
 
 export function listUsers() {
   return apiRequest<UserSummary[]>('/api/users');
+}
+
+export function listComments(taskId: number) {
+  return apiRequest<Comment[]>(`/api/tasks/${taskId}/comments`);
+}
+
+export function addComment(taskId: number, body: string) {
+  return apiRequest<Comment>(`/api/tasks/${taskId}/comments`, {
+    method: 'POST',
+    body: JSON.stringify({ body }),
+  });
+}
+
+export function deleteComment(taskId: number, commentId: number) {
+  return apiRequest<void>(`/api/tasks/${taskId}/comments/${commentId}`, { method: 'DELETE' });
 }
