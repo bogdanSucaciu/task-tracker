@@ -6,6 +6,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface TaskRepository extends JpaRepository<Task, Long> {
     List<Task> findByStatus(TaskStatus status);
 
+    List<Task> findByPriority(TaskPriority priority);
+
+    List<Task> findByStatusAndPriority(TaskStatus status, TaskPriority priority);
+
     List<Task> findByAssignedUserId(Long assignedUserId);
 
     List<Task> findByAssignedUserIdAndStatus(Long assignedUserId, TaskStatus status);

@@ -43,6 +43,12 @@ public class Task {
     @Column(nullable = false, length = 20)
     private TaskStatus status = TaskStatus.TODO;
 
+    // columnDefinition supplies a DB default so ddl-auto can add this NOT NULL
+    // column and backfill existing rows to MEDIUM.
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20, columnDefinition = "varchar(20) default 'MEDIUM'")
+    private TaskPriority priority = TaskPriority.MEDIUM;
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "assigned_user_id", nullable = false)
     private User assignedUser;
@@ -58,17 +64,19 @@ public class Task {
     protected Task() {
     }
 
-    public Task(String title, String description, TaskStatus status, User assignedUser) {
+    public Task(String title, String description, TaskStatus status, TaskPriority priority, User assignedUser) {
         this.title = title;
         this.description = description;
         this.status = status == null ? TaskStatus.TODO : status;
+        this.priority = priority == null ? TaskPriority.MEDIUM : priority;
         this.assignedUser = assignedUser;
     }
 
-    public void update(String title, String description, TaskStatus status, User assignedUser) {
+    public void update(String title, String description, TaskStatus status, TaskPriority priority, User assignedUser) {
         this.title = title;
         this.description = description;
         this.status = status;
+        this.priority = priority == null ? TaskPriority.MEDIUM : priority;
         this.assignedUser = assignedUser;
     }
 
@@ -90,6 +98,10 @@ public class Task {
 
     public TaskStatus getStatus() {
         return status;
+    }
+
+    public TaskPriority getPriority() {
+        return priority;
     }
 
     public User getAssignedUser() {
