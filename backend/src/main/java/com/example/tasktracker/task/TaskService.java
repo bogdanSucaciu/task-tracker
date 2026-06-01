@@ -39,7 +39,8 @@ public class TaskService {
         // TODO: move sorting into repository queries before the task list grows.
         Comparator<Task> comparator = byCreatedAt;
         if ("priority".equalsIgnoreCase(sort)) {
-            // HIGH -> MEDIUM -> LOW (reverse of the enum's natural order), ties keep newest-first.
+            // CRITICAL -> HIGH -> MEDIUM -> LOW -> TRIVIAL (reverse of the enum's
+            // natural order), ties keep newest-first.
             comparator = Comparator.comparing(Task::getPriority, Comparator.reverseOrder())
                 .thenComparing(byCreatedAt);
         }
