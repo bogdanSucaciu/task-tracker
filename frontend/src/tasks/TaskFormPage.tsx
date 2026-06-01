@@ -105,9 +105,11 @@ export function TaskFormPage() {
         <label className="field">
           <span>Priority</span>
           <select value={priority} onChange={(event) => setPriority(event.target.value as TaskPriority)}>
-            <option value="LOW">Low</option>
-            <option value="MEDIUM">Medium</option>
+            <option value="CRITICAL">Critical</option>
             <option value="HIGH">High</option>
+            <option value="MEDIUM">Medium</option>
+            <option value="LOW">Low</option>
+            <option value="TRIVIAL">Trivial</option>
           </select>
         </label>
         <label className="field">

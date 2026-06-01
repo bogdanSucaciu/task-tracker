@@ -1,6 +1,6 @@
 export type TaskStatus = 'TODO' | 'IN_PROGRESS' | 'DONE';
 
-export type TaskPriority = 'LOW' | 'MEDIUM' | 'HIGH';
+export type TaskPriority = 'TRIVIAL' | 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
 
 export type UserSummary = {
   id: number;

@@ -1,7 +1,9 @@
 package com.example.tasktracker.task;
 
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.everyItem;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -151,7 +153,7 @@ class TaskControllerTest {
     }
 
     @Test
-    void sortsTasksByPriorityHighToLow() throws Exception {
+    void sortsTasksByPriorityCriticalToTrivial() throws Exception {
         JsonNode auth = register("priority-sort@example.com");
         String token = auth.get("token").asText();
         long userId = auth.get("userId").asLong();
@@ -159,13 +161,62 @@ class TaskControllerTest {
         createTask(token, userId, "Low one", "TODO", "LOW");
         createTask(token, userId, "High one", "TODO", "HIGH");
         createTask(token, userId, "Medium one", "TODO", "MEDIUM");
+        createTask(token, userId, "Critical one", "TODO", "CRITICAL");
+        createTask(token, userId, "Trivial one", "TODO", "TRIVIAL");
 
         mockMvc.perform(get("/api/tasks")
                         .param("sort", "priority")
                         .header("Authorization", "Bearer " + token))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(3)))
-                .andExpect(jsonPath("$[*].priority").value(contains("HIGH", "MEDIUM", "LOW")));
+                .andExpect(jsonPath("$", hasSize(5)))
+                .andExpect(jsonPath("$[*].priority")
+                        .value(contains("CRITICAL", "HIGH", "MEDIUM", "LOW", "TRIVIAL")));
+    }
+
+    @Test
+    void roundTripsAndFiltersNewPriorityLevels() throws Exception {
+        JsonNode auth = register("priority-bookends@example.com");
+        String token = auth.get("token").asText();
+        long userId = auth.get("userId").asLong();
+
+        String created = mockMvc.perform(post("/api/tasks")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "title": "Drop everything",
+                                  "status": "TODO",
+                                  "priority": "CRITICAL",
+                                  "assignedUserId": %d
+                                }
+                                """.formatted(userId)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.priority").value("CRITICAL"))
+                .andReturn().getResponse().getContentAsString();
+        long taskId = objectMapper.readTree(created).get("id").asLong();
+
+        mockMvc.perform(put("/api/tasks/" + taskId)
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "title": "Drop everything",
+                                  "status": "TODO",
+                                  "priority": "TRIVIAL",
+                                  "assignedUserId": %d
+                                }
+                                """.formatted(userId)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.priority").value("TRIVIAL"));
+
+        createTask(token, userId, "Someday maybe", "TODO", "TRIVIAL");
+
+        mockMvc.perform(get("/api/tasks")
+                        .param("priority", "TRIVIAL")
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(2)))
+                .andExpect(jsonPath("$[*].priority").value(everyItem(is("TRIVIAL"))));
     }
 
     private JsonNode register(String email) throws Exception {

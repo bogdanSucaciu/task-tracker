@@ -16,9 +16,11 @@ const statuses: Array<{ label: string; value: TaskStatus | '' }> = [
 
 const priorities: Array<{ label: string; value: TaskPriority | '' }> = [
   { label: 'Any priority', value: '' },
+  { label: 'Critical', value: 'CRITICAL' },
   { label: 'High', value: 'HIGH' },
   { label: 'Medium', value: 'MEDIUM' },
   { label: 'Low', value: 'LOW' },
+  { label: 'Trivial', value: 'TRIVIAL' },
 ];
 
 export function TaskListPage() {

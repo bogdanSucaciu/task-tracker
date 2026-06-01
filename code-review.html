@@ -29,7 +29,7 @@
 <body>
 <div class="wrap">
   <h1>Code Review Report</h1>
-  <div class="meta">Task Priority feature · 11 source file(s) changed + 2 new · generated 2026-06-01 · security pass by delegated subagent</div>
+  <div class="meta">8 file(s) changed · generated 2026-06-01 · security pass by delegated subagent</div>
 
   <div class="counts">
     <span class="pill">Critical: 0</span>
@@ -38,15 +38,25 @@
   </div>
 
   <section>
+    <h2><span class="badge b-crit">Critical</span> 0</h2>
+    <div class="finding"><span class="ok">No critical findings.</span></div>
+  </section>
+
+  <section>
+    <h2><span class="badge b-warn">Warnings</span> 0</h2>
+    <div class="finding"><span class="ok">No warnings. Security pass returned <em>no security issues found</em>.</span></div>
+  </section>
+
+  <section>
     <h2><span class="badge b-nit">Nits</span> 1</h2>
     <div class="finding">
-      <span class="loc">frontend/src/styles/global.css:562</span>
-      <div>The new <code>.priority-badge</code> rules duplicate the base layout of <code>.status-badge</code> (display/padding/radius/font and the <code>::before</code> dot). This intentionally mirrors the existing badge pattern, so it's consistent — but the shared base could be factored into one class the two badges extend.</div>
+      <span class="loc">frontend/src/tasks/TaskFormPage.tsx:107</span>
+      <div>The Priority dropdown options were reordered from ascending (Low→High) to descending importance (Critical→Trivial). This is a deliberate UX choice matching the PRD's CRITICAL→TRIVIAL scale and is consistent with the list filter ordering — noted only for awareness, not a problem.</div>
     </div>
   </section>
 
   <div class="summary">
-    <strong>Summary.</strong> The change cleanly mirrors the existing <code>TaskStatus</code> field across the data model, DTOs, service, controller, repository, and UI exactly as the PRD specifies. Backend (14) and frontend (2) tests pass and cover default-on-create, round-trip create/update, invalid-value rejection (400), the priority filter, and priority sort. The delegated security pass found no issues (no auth/JWT/CORS changes, parameterized Spring Data queries, enum binding rejects bad input, JSX auto-escapes the badge). No Critical or Warning findings — safe to commit.
+    <strong>Summary.</strong> Issue #3 (two new priority levels) is implemented cleanly by mirroring the existing enum/badge/sort patterns — the enum is extended in low→high declaration order so the existing reverse-natural-order sort yields CRITICAL→HIGH→MEDIUM→LOW→TRIVIAL, and the frontend union/labels/dropdown/filter/CSS are extended in lockstep. Backend tests assert the full-scale sort plus new-value round-trip and filtering. No DTO, auth, JWT, or dependency surface changed; persistence is <code>EnumType.STRING</code> so reordering constants is safe for existing rows. Safe to commit.
   </div>
 </div>
 </body>

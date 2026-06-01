@@ -592,6 +592,11 @@ small {
   background: currentColor;
 }
 
+.priority-badge.critical {
+  background: rgba(124, 58, 237, 0.16);
+  color: #7c3aed;
+}
+
 .priority-badge.high {
   background: var(--danger-soft);
   color: var(--danger);
@@ -605,6 +610,23 @@ small {
 .priority-badge.low {
   background: var(--neutral-soft);
   color: var(--neutral);
+}
+
+.priority-badge.trivial {
+  background: rgba(142, 142, 147, 0.08);
+  color: rgba(142, 142, 147, 0.75);
+}
+
+@media (prefers-color-scheme: dark) {
+  .priority-badge.critical {
+    background: rgba(167, 139, 250, 0.22);
+    color: #c4b5fd;
+  }
+
+  .priority-badge.trivial {
+    background: rgba(174, 174, 178, 0.1);
+    color: rgba(174, 174, 178, 0.7);
+  }
 }
 
 /* ---------- Forms ---------- */
