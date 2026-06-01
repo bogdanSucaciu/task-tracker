@@ -20,11 +20,11 @@ class TaskServiceTest {
     @Test
     void createAssignsTaskToUser() {
         User user = new User("dev@example.com", "Dev User", "hash");
-        Task saved = new Task("Ship demo", "Prepare workflow", TaskStatus.TODO, user);
+        Task saved = new Task("Ship demo", "Prepare workflow", TaskStatus.TODO, TaskPriority.MEDIUM, user);
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         when(taskRepository.save(Mockito.any(Task.class))).thenReturn(saved);
 
-        TaskResponse response = taskService.create(new TaskRequest("Ship demo", "Prepare workflow", null, 1L));
+        TaskResponse response = taskService.create(new TaskRequest("Ship demo", "Prepare workflow", null, null, 1L));
 
         assertThat(response.title()).isEqualTo("Ship demo");
         assertThat(response.assignedUser().email()).isEqualTo("dev@example.com");
@@ -35,7 +35,30 @@ class TaskServiceTest {
     void createFailsWhenAssignedUserMissing() {
         when(userRepository.findById(99L)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> taskService.create(new TaskRequest("Task", null, TaskStatus.TODO, 99L)))
+        assertThatThrownBy(() ->
+            taskService.create(new TaskRequest("Task", null, TaskStatus.TODO, TaskPriority.HIGH, 99L)))
             .isInstanceOf(NotFoundException.class);
+    }
+
+    @Test
+    void createDefaultsPriorityToMediumWhenOmitted() {
+        User user = new User("dev@example.com", "Dev User", "hash");
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(taskRepository.save(Mockito.any(Task.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        TaskResponse response = taskService.create(new TaskRequest("No priority", null, TaskStatus.TODO, null, 1L));
+
+        assertThat(response.priority()).isEqualTo(TaskPriority.MEDIUM);
+    }
+
+    @Test
+    void createStoresExplicitPriority() {
+        User user = new User("dev@example.com", "Dev User", "hash");
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(taskRepository.save(Mockito.any(Task.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        TaskResponse response = taskService.create(new TaskRequest("Urgent", null, TaskStatus.TODO, TaskPriority.HIGH, 1L));
+
+        assertThat(response.priority()).isEqualTo(TaskPriority.HIGH);
     }
 }

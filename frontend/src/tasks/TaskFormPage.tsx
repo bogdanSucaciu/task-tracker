@@ -4,7 +4,7 @@ import { MessageSquare, Save, Trash2 } from 'lucide-react';
 import { addComment, createTask, deleteComment, getTask, listComments, listUsers, updateTask } from '../api/taskApi';
 import { Button } from '../components/Button';
 import { Input } from '../components/Input';
-import type { Comment, TaskStatus, UserSummary } from './taskTypes';
+import type { Comment, TaskPriority, TaskStatus, UserSummary } from './taskTypes';
 
 export function TaskFormPage() {
   const navigate = useNavigate();
@@ -13,6 +13,7 @@ export function TaskFormPage() {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [status, setStatus] = useState<TaskStatus>('TODO');
+  const [priority, setPriority] = useState<TaskPriority>('MEDIUM');
   const [assignedUserId, setAssignedUserId] = useState<number | ''>('');
   const [users, setUsers] = useState<UserSummary[]>([]);
   const [error, setError] = useState('');
@@ -39,6 +40,7 @@ export function TaskFormPage() {
         setTitle(task.title);
         setDescription(task.description ?? '');
         setStatus(task.status);
+        setPriority(task.priority);
         setAssignedUserId(task.assignedUser.id);
       })
       .catch((err) => setError(err instanceof Error ? err.message : 'Unable to load task'));
@@ -64,7 +66,7 @@ export function TaskFormPage() {
       setError('Assigned user is required');
       return;
     }
-    const payload = { title, description, status, assignedUserId };
+    const payload = { title, description, status, priority, assignedUserId };
     try {
       if (editing) {
         await updateTask(Number(taskId), payload);
@@ -98,6 +100,14 @@ export function TaskFormPage() {
             <option value="TODO">Todo</option>
             <option value="IN_PROGRESS">In progress</option>
             <option value="DONE">Done</option>
+          </select>
+        </label>
+        <label className="field">
+          <span>Priority</span>
+          <select value={priority} onChange={(event) => setPriority(event.target.value as TaskPriority)}>
+            <option value="LOW">Low</option>
+            <option value="MEDIUM">Medium</option>
+            <option value="HIGH">High</option>
           </select>
         </label>
         <label className="field">

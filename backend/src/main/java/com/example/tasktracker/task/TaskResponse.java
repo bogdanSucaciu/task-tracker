@@ -8,6 +8,7 @@ public record TaskResponse(
     String title,
     String description,
     TaskStatus status,
+    TaskPriority priority,
     UserResponse assignedUser,
     Instant createdAt,
     Instant updatedAt
@@ -18,6 +19,7 @@ public record TaskResponse(
             task.getTitle(),
             task.getDescription(),
             task.getStatus(),
+            task.getPriority(),
             UserResponse.from(task.getAssignedUser()),
             task.getCreatedAt(),
             task.getUpdatedAt()
