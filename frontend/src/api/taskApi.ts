@@ -1,9 +1,19 @@
 import { apiRequest } from './http';
-import type { Comment, Task, TaskPayload, TaskStatus, UserSummary } from '../tasks/taskTypes';
+import type { Comment, Task, TaskPayload, TaskPriority, TaskStatus, UserSummary } from '../tasks/taskTypes';
 
-export function listTasks(status?: TaskStatus) {
-  const query = status ? `?status=${status}` : '';
-  return apiRequest<Task[]>(`/api/tasks${query}`);
+export type TaskFilters = {
+  status?: TaskStatus;
+  priority?: TaskPriority;
+  sort?: 'priority';
+};
+
+export function listTasks(filters: TaskFilters = {}) {
+  const params = new URLSearchParams();
+  if (filters.status) params.set('status', filters.status);
+  if (filters.priority) params.set('priority', filters.priority);
+  if (filters.sort) params.set('sort', filters.sort);
+  const query = params.toString();
+  return apiRequest<Task[]>(`/api/tasks${query ? `?${query}` : ''}`);
 }
 
 export function getTask(id: number) {

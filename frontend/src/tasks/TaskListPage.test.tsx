@@ -10,6 +10,7 @@ vi.mock('../api/taskApi', () => ({
       title: 'Review release workflow',
       description: 'Check automation',
       status: 'IN_PROGRESS',
+      priority: 'HIGH',
       assignedUser: { id: 1, email: 'dev@example.com', displayName: 'Dev User' },
       createdAt: '2026-05-16T10:00:00Z',
       updatedAt: '2026-05-16T10:00:00Z',
@@ -28,4 +29,8 @@ test('renders loaded tasks', async () => {
 
   expect(await screen.findByText('Review release workflow')).toBeInTheDocument();
   expect(screen.getByText(/Dev User/)).toBeInTheDocument();
+
+  const priorityBadge = screen.getByText('High', { selector: '.priority-badge' });
+  expect(priorityBadge).toBeInTheDocument();
+  expect(priorityBadge).toHaveClass('priority-badge', 'high');
 });

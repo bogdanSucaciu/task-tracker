@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Check, Plus, RotateCcw, Trash2 } from 'lucide-react';
+import { ArrowDownWideNarrow, Check, Plus, RotateCcw, Trash2 } from 'lucide-react';
 import { deleteTask, listTasks, updateTaskStatus } from '../api/taskApi';
 import { Button } from '../components/Button';
 import { StatusBadge } from '../components/StatusBadge';
-import type { Task, TaskStatus } from './taskTypes';
+import { PriorityBadge } from '../components/PriorityBadge';
+import type { Task, TaskPriority, TaskStatus } from './taskTypes';
 
 const statuses: Array<{ label: string; value: TaskStatus | '' }> = [
   { label: 'All', value: '' },
@@ -13,15 +14,28 @@ const statuses: Array<{ label: string; value: TaskStatus | '' }> = [
   { label: 'Done', value: 'DONE' },
 ];
 
+const priorities: Array<{ label: string; value: TaskPriority | '' }> = [
+  { label: 'Any priority', value: '' },
+  { label: 'High', value: 'HIGH' },
+  { label: 'Medium', value: 'MEDIUM' },
+  { label: 'Low', value: 'LOW' },
+];
+
 export function TaskListPage() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [status, setStatus] = useState<TaskStatus | ''>('');
+  const [priority, setPriority] = useState<TaskPriority | ''>('');
+  const [sortByPriority, setSortByPriority] = useState(false);
   const [error, setError] = useState('');
 
   async function load() {
     setError('');
     try {
-      setTasks(await listTasks(status || undefined));
+      setTasks(await listTasks({
+        status: status || undefined,
+        priority: priority || undefined,
+        sort: sortByPriority ? 'priority' : undefined,
+      }));
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unable to load tasks');
     }
@@ -29,7 +43,7 @@ export function TaskListPage() {
 
   useEffect(() => {
     void load();
-  }, [status]);
+  }, [status, priority, sortByPriority]);
 
   async function markDone(task: Task) {
     await updateTaskStatus(task.id, task.status === 'DONE' ? 'IN_PROGRESS' : 'DONE');
@@ -50,16 +64,36 @@ export function TaskListPage() {
         </div>
         <Link className="link-button" to="/tasks/new"><Plus size={16} />Create task</Link>
       </div>
-      <div className="filters">
-        {statuses.map((option) => (
-          <button
-            className={status === option.value ? 'active' : ''}
-            key={option.label}
-            onClick={() => setStatus(option.value)}
-          >
-            {option.label}
-          </button>
-        ))}
+      <div className="filter-bar">
+        <div className="filters">
+          {statuses.map((option) => (
+            <button
+              className={status === option.value ? 'active' : ''}
+              key={option.label}
+              onClick={() => setStatus(option.value)}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
+        <div className="filters">
+          {priorities.map((option) => (
+            <button
+              className={priority === option.value ? 'active' : ''}
+              key={option.label}
+              onClick={() => setPriority(option.value)}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
+        <Button
+          variant={sortByPriority ? 'primary' : 'secondary'}
+          onClick={() => setSortByPriority((value) => !value)}
+          icon={<ArrowDownWideNarrow size={15} />}
+        >
+          Sort by priority
+        </Button>
       </div>
       {error && <div className="error">{error}</div>}
       <section className="task-list">
@@ -70,6 +104,7 @@ export function TaskListPage() {
               <p>{task.description || 'No description'}</p>
               <small>
                 <StatusBadge status={task.status} />
+                <PriorityBadge priority={task.priority} />
                 {task.assignedUser.displayName}
               </small>
             </div>

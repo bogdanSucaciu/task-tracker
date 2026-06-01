@@ -1,5 +1,7 @@
 export type TaskStatus = 'TODO' | 'IN_PROGRESS' | 'DONE';
 
+export type TaskPriority = 'LOW' | 'MEDIUM' | 'HIGH';
+
 export type UserSummary = {
   id: number;
   email: string;
@@ -11,6 +13,7 @@ export type Task = {
   title: string;
   description: string | null;
   status: TaskStatus;
+  priority: TaskPriority;
   assignedUser: UserSummary;
   createdAt: string;
   updatedAt: string;
@@ -20,6 +23,7 @@ export type TaskPayload = {
   title: string;
   description: string;
   status: TaskStatus;
+  priority: TaskPriority;
   assignedUserId: number;
 };
 

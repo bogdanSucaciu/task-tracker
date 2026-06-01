@@ -426,6 +426,18 @@ small {
 }
 
 /* ---------- Filters (segmented control) ---------- */
+.filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.filter-bar .filters {
+  margin-bottom: 0;
+}
+
 .filters {
   display: inline-flex;
   gap: 2px;
@@ -557,6 +569,42 @@ small {
 .status-badge.done {
   background: var(--success-soft);
   color: var(--success);
+}
+
+/* ---------- Priority badge ---------- */
+.priority-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: var(--radius-pill);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+
+.priority-badge::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.priority-badge.high {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+.priority-badge.medium {
+  background: var(--warning-soft);
+  color: var(--warning);
+}
+
+.priority-badge.low {
+  background: var(--neutral-soft);
+  color: var(--neutral);
 }
 
 /* ---------- Forms ---------- */

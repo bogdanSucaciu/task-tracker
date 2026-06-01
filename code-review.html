@@ -29,65 +29,24 @@
 <body>
 <div class="wrap">
   <h1>Code Review Report</h1>
-  <div class="meta">10 file(s) changed · generated 2026-05-23 · security pass by delegated subagent</div>
+  <div class="meta">Task Priority feature · 11 source file(s) changed + 2 new · generated 2026-06-01 · security pass by delegated subagent</div>
 
   <div class="counts">
-    <span class="pill">Critical: 2</span>
-    <span class="pill">Warnings: 3</span>
-    <span class="pill">Nits: 3</span>
+    <span class="pill">Critical: 0</span>
+    <span class="pill">Warnings: 0</span>
+    <span class="pill">Nits: 1</span>
   </div>
 
   <section>
-    <h2><span class="badge b-crit">Critical</span> 2</h2>
+    <h2><span class="badge b-nit">Nits</span> 1</h2>
     <div class="finding">
-      <span class="loc">backend/src/main/java/com/example/tasktracker/comment/ (whole package) + frontend/src/tasks/TaskFormPage.tsx:113</span>
-      <div>The change introduces a task-comments feature, which is explicitly out of scope. <code>AGENTS.md</code> states &ldquo;Do not implement task comments in this version,&rdquo; and <code>CLAUDE.md</code> lists &ldquo;No task comments &mdash; intentionally out of scope&rdquo; as a key design decision. This violates a documented hard rule.</div>
-      <div class="fix">Fix: Revert the feature, or get the design decision in <code>AGENTS.md</code>/<code>CLAUDE.md</code> formally changed before merging.</div>
-    </div>
-    <div class="finding">
-      <span class="loc">backend/src/main/java/com/example/tasktracker/comment/CommentController.java:43</span><span class="src">Security</span>
-      <div>DELETE <code>/api/tasks/{taskId}/comments/{commentId}</code> ignores the <code>taskId</code> path variable and never verifies the comment belongs to that task; <code>deleteComment(commentId)</code> deletes any comment by raw ID, so a comment can be deleted via an unrelated task&rsquo;s URL (broken object-level scoping / IDOR beyond the documented team-wide model).</div>
-      <div class="fix">Fix: Load the comment, verify <code>comment.getTask().getId().equals(taskId)</code> (404 otherwise) before deleting; pass <code>taskId</code> into the service.</div>
-    </div>
-  </section>
-
-  <section>
-    <h2><span class="badge b-warn">Warnings</span> 3</h2>
-    <div class="finding">
-      <span class="loc">frontend/src/tasks/TaskFormPage.tsx:57</span>
-      <div><code>removeComment</code> calls <code>deleteComment(...)</code> without <code>await</code> or <code>.catch</code>, then optimistically filters the comment out of state regardless of outcome. A failed DELETE leaves the comment in the DB but gone from the UI, and the floating promise rejects unhandled.</div>
-      <div class="fix">Fix: <code>await</code> the call inside try/catch and only update state on success (mirror <code>submitComment</code>).</div>
-    </div>
-    <div class="finding">
-      <span class="loc">backend/src/main/java/com/example/tasktracker/comment/CommentRequest.java:6</span><span class="src">Security</span>
-      <div><code>body</code> has only <code>@NotBlank</code> with no maximum length, and the entity column is unbounded <code>text</code> (Comment.java:25); an authenticated user can POST arbitrarily large comment bodies (storage-exhaustion / DoS at the input boundary).</div>
-      <div class="fix">Fix: Add <code>@Size(max = ...)</code> (e.g. 2000&ndash;5000) to <code>CommentRequest.body</code>.</div>
-    </div>
-    <div class="finding">
-      <span class="loc">backend/src/main/java/com/example/tasktracker/comment/ + frontend/src/tasks/</span>
-      <div>No tests accompany the new endpoints or UI behavior (create / list / delete). New behavior ships untested.</div>
-      <div class="fix">Fix: Add a focused <code>CommentServiceTest</code> (and ideally a controller test) covering add, list-by-task, and delete.</div>
-    </div>
-  </section>
-
-  <section>
-    <h2><span class="badge b-nit">Nits</span> 3</h2>
-    <div class="finding">
-      <span class="loc">frontend/src/tasks/TaskFormPage.tsx:45</span>
-      <div><code>listComments(...).catch(() =&gt; {})</code> swallows load errors silently; consider surfacing via <code>setError</code> for consistency with the rest of the page.</div>
-    </div>
-    <div class="finding">
-      <span class="loc">frontend/src/tasks/TaskFormPage.tsx:50</span>
-      <div><code>submitComment</code> has no try/catch, so a failed POST throws unhandled and leaves no user feedback.</div>
-    </div>
-    <div class="finding">
-      <span class="loc">backend/src/main/java/com/example/tasktracker/comment/CommentService.java:31</span><span class="src">Security</span>
-      <div><code>getComments</code> calls <code>commentRepository.findAll()</code> and filters in memory by <code>taskId</code>; loads every comment in the table on each request (resource concern as data grows). The project tolerates mildly inefficient queries, so this stays a nit.</div>
+      <span class="loc">frontend/src/styles/global.css:562</span>
+      <div>The new <code>.priority-badge</code> rules duplicate the base layout of <code>.status-badge</code> (display/padding/radius/font and the <code>::before</code> dot). This intentionally mirrors the existing badge pattern, so it's consistent — but the shared base could be factored into one class the two badges extend.</div>
     </div>
   </section>
 
   <div class="summary">
-    <strong>Summary.</strong> The comment code itself is on-convention (constructor injection, thin controller, DTOs not entities, <code>@Valid</code> + <code>@NotBlank</code>, JWT/BCrypt untouched, JPA parameterized queries, JSX auto-escaping), but the feature violates an explicit documented design decision and the delete endpoint has an IDOR scoping bug. Not safe to commit until the scope question is resolved and the unscoped delete is fixed.
+    <strong>Summary.</strong> The change cleanly mirrors the existing <code>TaskStatus</code> field across the data model, DTOs, service, controller, repository, and UI exactly as the PRD specifies. Backend (14) and frontend (2) tests pass and cover default-on-create, round-trip create/update, invalid-value rejection (400), the priority filter, and priority sort. The delegated security pass found no issues (no auth/JWT/CORS changes, parameterized Spring Data queries, enum binding rejects bad input, JSX auto-escapes the badge). No Critical or Warning findings — safe to commit.
   </div>
 </div>
 </body>

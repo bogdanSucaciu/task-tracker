@@ -20,12 +20,32 @@ public class TaskService {
     }
 
     @Transactional(readOnly = true)
-    public List<TaskResponse> list(TaskStatus status) {
-        List<Task> tasks = status == null ? taskRepository.findAll() : taskRepository.findByStatus(status);
+    public List<TaskResponse> list(TaskStatus status, TaskPriority priority, String sort) {
+        List<Task> tasks;
+        if (status != null && priority != null) {
+            tasks = taskRepository.findByStatusAndPriority(status, priority);
+        } else if (status != null) {
+            tasks = taskRepository.findByStatus(status);
+        } else if (priority != null) {
+            tasks = taskRepository.findByPriority(priority);
+        } else {
+            tasks = taskRepository.findAll();
+        }
+
+        // Newest-first is the default ordering and the tie-breaker for ?sort=priority.
+        Comparator<Task> byCreatedAt =
+            Comparator.comparing(Task::getCreatedAt, Comparator.nullsLast(Comparator.reverseOrder()));
 
         // TODO: move sorting into repository queries before the task list grows.
+        Comparator<Task> comparator = byCreatedAt;
+        if ("priority".equalsIgnoreCase(sort)) {
+            // HIGH -> MEDIUM -> LOW (reverse of the enum's natural order), ties keep newest-first.
+            comparator = Comparator.comparing(Task::getPriority, Comparator.reverseOrder())
+                .thenComparing(byCreatedAt);
+        }
+
         return tasks.stream()
-            .sorted(Comparator.comparing(Task::getCreatedAt, Comparator.nullsLast(Comparator.reverseOrder())))
+            .sorted(comparator)
             .map(TaskResponse::from)
             .toList();
     }
@@ -46,6 +66,7 @@ public class TaskService {
             request.title().trim(),
             normalizeDescription(request.description()),
             request.status() == null ? TaskStatus.TODO : request.status(),
+            request.priority() == null ? TaskPriority.MEDIUM : request.priority(),
             assignedUser
         );
         return TaskResponse.from(taskRepository.save(task));
@@ -64,7 +85,14 @@ public class TaskService {
             throw new IllegalArgumentException("Done tasks cannot be moved directly back to TODO");
         }
 
-        task.update(request.title().trim(), normalizeDescription(request.description()), newStatus, assignedUser);
+        TaskPriority newPriority = request.priority() == null ? TaskPriority.MEDIUM : request.priority();
+        task.update(
+            request.title().trim(),
+            normalizeDescription(request.description()),
+            newStatus,
+            newPriority,
+            assignedUser
+        );
         return TaskResponse.from(task);
     }
 
